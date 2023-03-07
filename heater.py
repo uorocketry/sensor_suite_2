@@ -44,12 +44,16 @@ class Heater(Thread):
     def run(self):
 
         while True:
-            data = self.read()
+            try:
+                data = self.read()
 
-            logging.debug(f"Heater: {data}")
+                logging.debug(f"Heater: {data}")
 
-            # send to datahandler
-            self.datahandler.updateData(Heater.DATA_HANDLER_NAME, data)
+                # send to datahandler
+                self.datahandler.updateData(Heater.DATA_HANDLER_NAME, data)
+            except Exception as e:
+                logging.error(f"Could not read UART: {e}")
+                pass
 
             time.sleep(1/self.frequency)
 
@@ -57,10 +61,7 @@ class Heater(Thread):
         self.uart.flushInput()
         data = self.uart.readline()
         # convert the character to a float
-        try:
-            value = float(data.decode('utf-8'))
-        except:
-            value = 0.0
+        value = float(data.decode('utf-8'))
 
         return value
     
