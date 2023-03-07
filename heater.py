@@ -54,10 +54,13 @@ class Heater(Thread):
             time.sleep(1/self.frequency)
 
     def read(self):
-
+        self.uart.flushInput()
         data = self.uart.readline()
-        self.uart.flush()
         # convert the character to a float
-        value = float(data.decode('utf-8'))
+        try:
+            value = float(data.decode('utf-8'))
+        except:
+            value = 0.0
+
         return value
     
