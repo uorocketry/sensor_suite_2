@@ -7,6 +7,7 @@ import time
 import csv
 from DataHandler import DataHandler
 import os
+import logging
 
 class DataSaver:
 
@@ -42,10 +43,9 @@ class DataSaver:
         with open(self.path, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['timestamp'] + list(self.dataHandler.getDataTypes()))
-            print(self.formatFrame(['timestamp'] + list(self.dataHandler.getDataTypes()), delimiter="\t"))
+            logging.info(self.formatFrame(['timestamp'] + list(self.dataHandler.getDataTypes()), delimiter="\t"))
             while True:
-
-                print(self.formatFrame(self.dataHandler.getFrame(), delimiter="\t"))
+                logging.info(self.formatFrame(self.dataHandler.getFrame(), delimiter="\t"))
                 writer.writerow(self.dataHandler.getFrame())
                 file.flush()
                 time.sleep(self.delay)
