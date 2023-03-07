@@ -12,22 +12,22 @@ class DataSaver:
 
     dataFilePrefix = "data_"
 
-    def __init__(self, dataHandler: DataHandler, dataPath: str="./", frequency: int=1):
+    def __init__(self, dataHandler: DataHandler, config):
+        saverConfig = config["Logging"]
+
         self.dataHandler = dataHandler
-        self.dataPath = dataPath
-        self.frequency = frequency
-        self.delay = 1 / frequency
-        self.fileName = f"{DataSaver.dataFilePrefix}{self.getLatestCount(dataPath)}.csv"
+        self.dataPath = saverConfig["folder"]
+        self.frequency = saverConfig.getint("frequency")
+        self.delay = 1 / self.frequency
+        self.fileName = f"{DataSaver.dataFilePrefix}{self.getLatestCount(self.dataPath)}.csv"
         self.path = os.path.join(self.dataPath, self.fileName)
 
 
         self.dataThread = threading.Thread(target=self.dataThread)
         self.dataThread.start()
 
-
-
-
     def getLatestCount(self, dataPath: str):
+        os.makedirs(dataPath, exist_ok=True)
 
         count = 0
         for file in os.listdir(dataPath):

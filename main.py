@@ -28,4 +28,4 @@ if __name__ == '__main__':
 
             enabled_sensors.append(sensor_instance)
 
-    saver = DataSaver(handler)
+    saver = DataSaver(handler, config)
