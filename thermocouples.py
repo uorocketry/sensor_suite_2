@@ -8,10 +8,12 @@ import logging
 class Thermocouples(Thread):
     CONFIG_SECTION = "Thermocouples"
 
-    def __init__(self, config):
+    def __init__(self, config, handler):
         super().__init__()
 
         logging.info("Initializing thermocouples")
+
+        self.handler = handler
 
         thermo_config = config["Thermocouples"]
 
@@ -21,8 +23,10 @@ class Thermocouples(Thread):
         self.spi.max_speed_hz = 500000
 
         pins = thermo_config["probes"].split(",")
-        self.ce = [gpiozero.DigitalOutputDevice(pin, active_high=False, initial_value=False) for pin in
-                   pins]
+        self.ce = {f"thermocouple-{pin}": gpiozero.DigitalOutputDevice(pin, active_high=False, initial_value=False) for pin in
+                   pins}
+        for k, v in self.ce.items():
+            self.handler.addDataType(k)
 
         logging.info(f"The following thermocouples are enabled: {pins}")
 
@@ -34,12 +38,12 @@ class Thermocouples(Thread):
 
     def run(self):
         while True:
-            for idx, pin in enumerate(self.ce):
+            for name, pin in self.ce.items():
                 data = self.read(pin)
 
-                logging.debug(f"Thermocouple {idx}: {data}")
+                logging.debug(f"Thermocouple {name}: {data}")
 
-                # send to datahandler
+                self.handler.updateData(name, data)
 
             time.sleep(1/self.frequency)
 
