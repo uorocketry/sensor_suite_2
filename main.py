@@ -2,11 +2,13 @@ import configparser
 import logging
 
 from thermocouples import Thermocouples
+from heater import Heater
 
 CONFIG_FILE = "config.ini"
 
 sensors = [
-    Thermocouples
+    Thermocouples,
+    Heater
 ]
 
 if __name__ == '__main__':
