@@ -1,4 +1,5 @@
 import configparser
+import logging
 
 from thermocouples import Thermocouples
 
@@ -9,6 +10,8 @@ sensors = [
 ]
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
 

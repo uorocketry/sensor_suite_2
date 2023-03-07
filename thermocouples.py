@@ -2,6 +2,7 @@ import spidev
 import gpiozero
 from threading import Thread
 import time
+import logging
 
 
 class Thermocouples(Thread):
@@ -10,6 +11,8 @@ class Thermocouples(Thread):
     def __init__(self, config):
         super().__init__()
 
+        logging.info("Initializing thermocouples")
+
         thermo_config = config["Thermocouples"]
 
         self.spi = spidev.SpiDev()
@@ -17,21 +20,24 @@ class Thermocouples(Thread):
         self.spi.mode = 0
         self.spi.max_speed_hz = 500000
 
+        pins = thermo_config["probes"].split(",")
         self.ce = [gpiozero.DigitalOutputDevice(pin, active_high=False, initial_value=False) for pin in
-                   thermo_config["probes"].split(",")]
+                   pins]
+
+        logging.info(f"The following thermocouples are enabled: {pins}")
 
         self.frequency = thermo_config.getint("frequency")
 
     @staticmethod
     def is_enabled(config):
-        return config[Thermocouple.CONFIG_SECTION].getboolean("enabled")
+        return config[Thermocouples.CONFIG_SECTION].getboolean("enabled")
 
     def run(self):
         while True:
             for idx, pin in enumerate(self.ce):
                 data = self.read(pin)
 
-                print(f"{idx}: {data}")
+                logging.debug(f"Thermocouple {idx}: {data}")
 
                 # send to datahandler
 
