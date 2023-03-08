@@ -1,6 +1,7 @@
 import configparser
 import logging
 import signal
+import time
 
 from thermocouples import Thermocouples
 from heater import Heater
@@ -38,3 +39,5 @@ if __name__ == '__main__':
 
             enabled_sensors.append(sensor_instance)
 
+    while True:
+        time.sleep(1000)
