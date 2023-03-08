@@ -10,8 +10,8 @@ class Sensor(Thread):
         super().__init__()
 
         self.datahandler = datahandler
-        self.config = config
-        self.frequency = self.config[self.NAME].getint("frequency")
+        self.sensorConfig = config[self.getName()]
+        self.frequency = self.sensorConfig.getint("frequency")
         self.paused_state = Condition()
         self.paused = True  # Start out paused.
         self._stop_event = Event()
@@ -79,7 +79,7 @@ class Sensor(Thread):
         return sensor.NAME
 
 if __name__=="__main__":
-    print("This is a parent class")
+    print("With a test child class")
     import time
     import configparser
     import signal
