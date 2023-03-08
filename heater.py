@@ -42,7 +42,7 @@ class Heater(Sensor):
         # convert the character to a float
         value = float(data.decode('utf-8'))
 
-        self.datahandler.addData(self.getName(), value)
+        self.datahandler.updateData(self.getName(), value)
     
     def cleanup(self):
         self.uart.close()

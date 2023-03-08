@@ -16,10 +16,6 @@ class Sensor(Thread):
         self.paused = True  # Start out paused.
         self._stop_event = Event()
 
-        self.setup()
-
-        self.start()
-
     def setup(self):
         # This function will be overriden by the child class to setup the sensor
         raise NotImplementedError("This function should be overriden by the child class")
@@ -51,6 +47,8 @@ class Sensor(Thread):
             self.paused_state.wait()
 
     def startAcquisition(self):
+        if not self.is_alive():
+            self.start()
         logging.info("Starting acquisition of sensor")
         with self.paused_state:
             self.paused = False

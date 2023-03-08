@@ -10,10 +10,11 @@ class Thermocouples(Sensor):
 
     def __init__(self, config, handler):
         super().__init__(config, handler)
-
         logging.info("Initializing thermocouples")
 
         self.pins = self.sensorConfig["probes"].split(",")
+        self.spi = None
+        self.ce = None
 
     def setup(self):
         self.spi = spidev.SpiDev()
@@ -23,7 +24,7 @@ class Thermocouples(Sensor):
         self.ce = {f"thermocouple-{pin}": gpiozero.DigitalOutputDevice(pin, active_high=False, initial_value=False) for pin in
                    self.pins}
         for k, v in self.ce.items():
-            self.handler.addDataType(k)
+            self.datahandler.addDataType(k)
 
         logging.info(f"The following thermocouples are enabled on pins: {self.pins}")
 
@@ -39,8 +40,7 @@ class Thermocouples(Sensor):
             
             logging.debug(f"Thermocouple {name}: {data}")
 
-            self.handler.updateData(name, data)
-
+            self.datahandler.updateData(name, data)
 
     def readPin(self, pin):
         pin.on()  # We control the chip enable pin manually.
