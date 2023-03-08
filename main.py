@@ -1,5 +1,6 @@
 import configparser
 import logging
+import signal
 
 from thermocouples import Thermocouples
 from heater import Heater
@@ -10,8 +11,19 @@ sensors = [
     Thermocouples,
     Heater
 ]
+def cleanExit(signal, frame):
+    print("Stopping sensors")
+    for sensor in enabled_sensors:
+        sensor.stop()
+    
+    exit(0)
+
+signal.signal(signal.SIGINT, cleanExit)
 
 if __name__ == '__main__':
+    
+
+
     logging.basicConfig(level=logging.INFO)
 
     config = configparser.ConfigParser()
