@@ -17,19 +17,12 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
 
-    # enabled_sensors = []
+    enabled_sensors = []
 
-    # for sensor in sensors:
-    #     if sensor.is_enabled(config):
-    #         sensor_instance = sensor(config)
-    #         sensor_instance.start()
+    for sensor in sensors:
+        if sensor.is_enabled(config):
+            sensor_instance = sensor(config)
+            sensor_instance.startAcquisition()
 
-    #         enabled_sensors.append(sensor_instance)
+            enabled_sensors.append(sensor_instance)
 
-
-    heater = Heater(config)
-    heater.start()
-
-    thermocouples = Thermocouples(config)
-    thermocouples.start()
-    
