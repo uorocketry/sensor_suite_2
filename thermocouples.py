@@ -1,53 +1,48 @@
 import spidev
 import gpiozero
-from threading import Thread
+from Sensor import Sensor
 import time
 import logging
 
 
-class Thermocouples(Thread):
-    CONFIG_SECTION = "Thermocouples"
+class Thermocouples(Sensor):
+    NAME = "Thermocouples"
 
     def __init__(self, config, handler):
-        super().__init__()
-
+        super().__init__(config, handler)
         logging.info("Initializing thermocouples")
 
-        self.handler = handler
+        self.pins = self.sensorConfig["probes"].split(",")
+        self.spi = None
+        self.ce = None
 
-        thermo_config = config["Thermocouples"]
-
+    def setup(self):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 0)
         self.spi.mode = 0
         self.spi.max_speed_hz = 500000
-
-        pins = thermo_config["probes"].split(",")
         self.ce = {f"thermocouple-{pin}": gpiozero.DigitalOutputDevice(pin, active_high=False, initial_value=False) for pin in
-                   pins}
+                   self.pins}
         for k, v in self.ce.items():
-            self.handler.addDataType(k)
+            self.datahandler.addDataType(k)
 
-        logging.info(f"The following thermocouples are enabled: {pins}")
+        logging.info(f"The following thermocouples are enabled on pins: {self.pins}")
 
-        self.frequency = thermo_config.getint("frequency")
+    def cleanup(self):
+        self.spi.close()
+        logging.info("Thermocouples closed")
 
-    @staticmethod
-    def is_enabled(config):
-        return config[Thermocouples.CONFIG_SECTION].getboolean("enabled")
 
-    def run(self):
-        while True:
-            for name, pin in self.ce.items():
-                data = self.read(pin)
+        
+    def read(self):
+        for name, pin in self.ce.items():
+            data = self.readPin(pin)
+            
+            logging.debug(f"Thermocouple {name}: {data}")
 
-                logging.debug(f"Thermocouple {name}: {data}")
+            self.datahandler.updateData(name, data)
 
-                self.handler.updateData(name, data)
-
-            time.sleep(1/self.frequency)
-
-    def read(self, pin):
+    def readPin(self, pin):
         pin.on()  # We control the chip enable pin manually.
         data = self.spi.readbytes(4)  # read 32 bits from the interface.
         pin.off()

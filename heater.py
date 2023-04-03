@@ -1,61 +1,40 @@
 import logging
-from threading import Thread
-import time
-import logging
 import serial
+from Sensor import Sensor
 
 
 
 # Heater is an arduino that connects to the pi via serial
 
 
-class Heater(Thread):
-    CONFIG_SECTION = "Heater"
-    DATA_HANDLER_NAME = "Heater"
+class Heater(Sensor):
+    NAME="Heater"
+
 
     def __init__(self, config, datahandler):
-        super().__init__()
+        super().__init__(config, datahandler)
 
-        self.datahandler = datahandler
+        self.uart = self.sensorConfig.get("uart")
+        self.baudRate = self.sensorConfig.get("baud")
 
-        logging.info("Initializing heater")
 
-        heater_config = config["Heater"]
+    def setup(self):
+        logging.info("Initializing heater serial connection")
 
-        self.frequency = heater_config.getint("frequency")
 
         self.uart = serial.Serial(
-            port=heater_config.get("uart"),
-            baudrate=heater_config.getint("baud"),
+            port=self.sensorConfig.get("uart"),
+            baudrate=self.sensorConfig.getint("baud"),
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
             bytesize=serial.EIGHTBITS,
             timeout=1
         )
 
-        self.datahandler.addDataType(Heater.DATA_HANDLER_NAME)
-        logging.info(f"The following heater is enabled: {heater_config.get('uart')}")
+        self.datahandler.addDataType(self.getName())
 
+        logging.info(f"The heater is enabled on port {self.sensorConfig.get('uart')}")
 
-    @staticmethod
-    def is_enabled(config):
-        return config[Heater.CONFIG_SECTION].getboolean("enabled")
-
-    def run(self):
-
-        while True:
-            try:
-                data = self.read()
-
-                logging.debug(f"Heater: {data}")
-
-                # send to datahandler
-                self.datahandler.updateData(Heater.DATA_HANDLER_NAME, data)
-            except Exception as e:
-                logging.error(f"Could not read UART: {e}")
-                pass
-
-            time.sleep(1/self.frequency)
 
     def read(self):
         self.uart.flushInput()
@@ -63,5 +42,8 @@ class Heater(Thread):
         # convert the character to a float
         value = float(data.decode('utf-8'))
 
-        return value
+        self.datahandler.updateData(self.getName(), value)
     
+    def cleanup(self):
+        self.uart.close()
+        logging.info("Heater serial connection closed")
